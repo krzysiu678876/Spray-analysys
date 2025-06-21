@@ -1,0 +1,12 @@
+TOPT-Algorytm
+1.Przekorwentować wszystkie pliki na format TIFF(przez program PFV),w nazwie liku musi być mfr i temperatura
+2.import image->folder
+3.W każdym pliku muszą być tylko TIFF należy usunąć dwa pierwsze pliki .cihx i .pdf
+one są do FPV a do ImageJ importujemy oddzielne obrazy jako ich sekwencję.
+3.File-import image sequence-zaznaczamy folder
+4.Image-Type-8bit jeżeli nie będzie na 8 bit, pliki źle się obrabiają
+5.Należy otworzyć pierwszą klatkę w oddzielnym oknie.
+6.Process\image calculator odejmujemy pierwszą klatkę od pliku tiff,xd tylko trzeba zmienić add na substract 
+(20 minut rozkminiałem co mi nie pasuje)
+7.Potem Image-adjust threshold, zazwyczaj od 10 w górę zaznaczamy.
+8.potem analize particles(10-infinyty) tutaj program de facto liczy ile jest jakich pixeli
