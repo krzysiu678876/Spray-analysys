@@ -4,10 +4,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import funkcjetopt as ft
 from pathlib import Path
-
-
+from matplotlib.animation import FFMpegWriter, PillowWriter
+import matplotlib.animation as animation
 dane=ft.file_reading()  # This function reads the CSV files and prepares the data
-
 
 #initializing sums of com_x and com_y for the whole dataset
 com_x= {}
@@ -71,9 +70,7 @@ for key in dane.keys(): #not really needed, but just to check if the keys are co
                         com_y[f'3/4_sum_mfr_{m}_T{t}'] += com_y_3_4
                         com_y[f'4/4_sum_mfr_{m}_T{t}'] += com_y_4_4
 
-
 # Plot com_x and com_y vs time for each data set
-
 
 all_times = []
 all_com_x_mfr_0_T60 = []
@@ -99,15 +96,15 @@ for key in dane.keys():
         if 'T60' in key:
             all_com_x_mfr_0_T60.append(dane[key][3])
             all_com_y_mfr_0_T60.append(dane[key][4])
-            all_area_mfr_0_T60.append(dane[key][0])  # Assuming area is at index 0
+            all_area_mfr_0_T60.append(dane[key][11])  # Changed area index to 11
         elif 'T100' in key: #there is no mfr0 for T100 but just in case
             all_com_x_mfr_0_T140.append(dane[key][3])
             all_com_y_mfr_0_T140.append(dane[key][4])
-            all_area_mfr_0_T140.append(dane[key][0])  # Assuming area is at index 0
+            all_area_mfr_0_T140.append(dane[key][11])  # Changed area index to 11
         if 'T140' in key:
             all_com_x_mfr_0_T140.append(dane[key][3])
             all_com_y_mfr_0_T140.append(dane[key][4])
-            all_area_mfr_0_T140.append(dane[key][0])
+            all_area_mfr_0_T140.append(dane[key][11])  # Changed area index to 11
         time_data = dane[key][5]
         com_x_data = dane[key][3]
         com_y_data = dane[key][4]
@@ -118,15 +115,15 @@ for key in dane.keys():
         if 'T60' in key:
             all_com_x_mfr_305_T60.append(dane[key][3])
             all_com_y_mfr_305_T60.append(dane[key][4])
-            all_area_mfr_305_T60.append(dane[key][0])
+            all_area_mfr_305_T60.append(dane[key][11])  # Changed area index to 11
         elif 'T100' in key:
             all_com_x_mfr_305_T100.append(dane[key][3])
             all_com_y_mfr_305_T100.append(dane[key][4])
-            all_area_mfr_305_T100.append(dane[key][0])
+            all_area_mfr_305_T100.append(dane[key][11])  # Changed area index to 11
         elif 'T140' in key:
             all_com_x_mfr_305_T140.append(dane[key][3])
             all_com_y_mfr_305_T140.append(dane[key][4])
-            all_area_mfr_305_T140.append(dane[key][0])
+            all_area_mfr_305_T140.append(dane[key][11])  # Changed area index to 11
         time_data = dane[key][5]
         com_x_data = dane[key][3]
         com_y_data = dane[key][4]
@@ -152,6 +149,13 @@ area_arrays_mfr_305_T60 = [arr[:min_length] for arr in all_area_mfr_305_T60]
 area_arrays_mfr_305_T100 = [arr[:min_length] for arr in all_area_mfr_305_T100]
 area_arrays_mfr_0_T140 = [arr[:min_length] for arr in all_area_mfr_0_T140]
 area_arrays_mfr_305_T140 = [arr[:min_length] for arr in all_area_mfr_305_T140]
+
+# Define com_area_arrays_* variables for plotting function
+com_area_arrays_mfr_0_T60 = area_arrays_mfr_0_T60
+com_area_arrays_mfr_0_T140 = area_arrays_mfr_0_T140
+com_area_arrays_mfr_305_T60 = area_arrays_mfr_305_T60
+com_area_arrays_mfr_305_T100 = area_arrays_mfr_305_T100
+com_area_arrays_mfr_305_T140 = area_arrays_mfr_305_T140
 
 avg_com_x_arrays_mfr_0_T60= np.mean(com_x_arrays_mfr_0_T60, axis=0)
 avg_com_y_arrays_mfr_0_T60 = np.mean(com_y_arrays_mfr_0_T60, axis=0)
@@ -203,7 +207,7 @@ min_area_mfr_305_T140 = np.min(area_arrays_mfr_305_T140, axis=0)
 max_area_mfr_305_T140 = np.max(area_arrays_mfr_305_T140, axis=0)
 
 
-# Plot all averages with fill_between
+# Plot all averages with fill_between for com_x
 plt.figure(figsize=(12, 8))
 
 # Define color and linestyle mapping
@@ -240,36 +244,47 @@ plt.title('Średnie położenie środka masy w osi x dla różnych wydatków mas
 plt.legend(fontsize=10, loc='best')
 plt.tight_layout()
 plt.savefig('avg_com_x_all_conditions_with_ranges.png', dpi=300)
-# Plot all averages for area with fill_between
-plt.figure(figsize=(12, 8))
 
-# Plot for mfr=0 with fill_between
-plt.plot(common_time, avg_area_arrays_mfr_0_T60, color=color_map[0], linestyle=linestyle_map[60], label='mfr0, T60')
-plt.fill_between(common_time, min_area_mfr_0_T60, max_area_mfr_0_T60, 
-                 color=color_map[0], alpha=alpha_fill)
+ft.plot_com_y_averages_with_ranges(
+    common_time,
+    avg_com_y_arrays_mfr_0_T60,
+    avg_com_y_arrays_mfr_0_T140,
+    avg_com_y_arrays_mfr_305_T60,
+    avg_com_y_arrays_mfr_305_T100,
+    avg_com_y_arrays_mfr_305_T140,
+    com_y_arrays_mfr_0_T60,
+    com_y_arrays_mfr_0_T140,
+    com_y_arrays_mfr_305_T60,
+    com_y_arrays_mfr_305_T100,
+    com_y_arrays_mfr_305_T140,
+    color_map,
+    linestyle_map,
+    alpha_fill
+)
 
-plt.plot(common_time, avg_area_arrays_mfr_0_T140, color=color_map[0], linestyle=linestyle_map[140], label='mfr0, T140')
-plt.fill_between(common_time, min_area_mfr_0_T140, max_area_mfr_0_T140, 
-                 color=color_map[0], alpha=alpha_fill)
+ft.plot_area_averages_with_ranges(
+    common_time,
+    avg_area_arrays_mfr_0_T60,
+    avg_area_arrays_mfr_0_T140,
+    avg_area_arrays_mfr_305_T60,
+    avg_area_arrays_mfr_305_T100,
+    avg_area_arrays_mfr_305_T140,
+    com_area_arrays_mfr_0_T60,
+    com_area_arrays_mfr_0_T140,
+    com_area_arrays_mfr_305_T60,
+    com_area_arrays_mfr_305_T100,
+    com_area_arrays_mfr_305_T140,
+    color_map,
+    linestyle_map,
+    alpha_fill
+)
 
-# Plot for mfr=305 with fill_between
-plt.plot(common_time, avg_area_arrays_mfr_305_T60, color=color_map[305], linestyle=linestyle_map[60], label='mfr305, T60')
-plt.fill_between(common_time, min_area_mfr_305_T60, max_area_mfr_305_T60, 
-                 color=color_map[305], alpha=alpha_fill)
+ft.animate_avg_com_x_vs_com_y(
+    avg_com_x_arrays_mfr_0_T60, avg_com_y_arrays_mfr_0_T60,
+    avg_com_x_arrays_mfr_0_T140, avg_com_y_arrays_mfr_0_T140,
+    avg_com_x_arrays_mfr_305_T60, avg_com_y_arrays_mfr_305_T60,
+    avg_com_x_arrays_mfr_305_T100, avg_com_y_arrays_mfr_305_T100,
+    avg_com_x_arrays_mfr_305_T140, avg_com_y_arrays_mfr_305_T140,
+    color_map, linestyle_map, common_time
+)
 
-plt.plot(common_time, avg_area_arrays_mfr_305_T100, color=color_map[305], linestyle=linestyle_map[100], label='mfr305, T100')
-plt.fill_between(common_time, min_area_mfr_305_T100, max_area_mfr_305_T100, 
-                 color=color_map[305], alpha=alpha_fill)
-
-plt.plot(common_time, avg_area_arrays_mfr_305_T140, color=color_map[305], linestyle=linestyle_map[140], label='mfr305, T140')
-plt.fill_between(common_time, min_area_mfr_305_T140, max_area_mfr_305_T140, 
-                 color=color_map[305], alpha=alpha_fill)
-
-plt.grid(True)
-plt.xlabel('Czas [s]', fontsize=12)
-plt.ylabel('Średnia powierzchnia', fontsize=12)
-plt.title('Średnia powierzchnia dla różnych wydatków masowych i temperatur', fontsize=14)
-plt.legend(fontsize=10, loc='best')
-plt.tight_layout()
-plt.savefig('avg_area_all_conditions_with_ranges.png', dpi=300)
-plt.show()
