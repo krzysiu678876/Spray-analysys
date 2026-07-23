@@ -115,4 +115,3 @@ A possible improvement would be to either start the analysis later in time or ap
 ## Authors
 
 - **Jan Starachowski**
-- **Kacper Malinowski** [file:9]
