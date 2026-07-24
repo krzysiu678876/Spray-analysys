@@ -58,10 +58,10 @@ For each frame, the script computes [file:9]:
 - time, based on frame number and camera rate of **10,000 fps**,
 - center-of-mass coordinates:
 
-\[
+$\[
 X_{CM} = \frac{\sum (X_i \cdot A_i)}{\sum A_i}, \qquad
 Y_{CM} = \frac{\sum (Y_i \cdot A_i)}{\sum A_i}
-\]
+\]$
 
 The results are then averaged over 7 measurement series for each operating point [file:9].
 
